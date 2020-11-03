@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
@@ -24,6 +26,19 @@ public class Client extends JFrame {
         JPanel panel = new JPanel(new GridLayout(2, 1));
         JButton send = new JButton("SEND");
         JTextField text = new JTextField();
+        text.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                try {
+                    out.write(text.getText().getBytes());
+                    byte[] buffer = new byte[256];
+                    int cnt = in.read(buffer);
+                    text.setText(new String(buffer, 0, cnt));
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
         send.addActionListener(a -> {
             String[] cmd = text.getText().split(" ");
             if (cmd[0].equals("upload")) {
@@ -32,17 +47,12 @@ public class Client extends JFrame {
             if (cmd[0].equals("download")) {
                 getFile(cmd[1]);
             }
+
             try {
-                out.write(text.getText().getBytes());
-                new Thread(() ->
-                {
-                    try {
-                        System.out.println(new String(in.readAllBytes()));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                ).start();
+                out.writeUTF(text.getText());
+                //byte[] buffer = new byte[256];
+                //int cnt = in.read(buffer);
+                text.setText("[server]: " + in.readUTF());
             } catch (IOException e) {
                 e.printStackTrace();
             }
