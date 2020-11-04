@@ -34,6 +34,9 @@ public class NioTelnetServer {
                 if (key.isReadable()) {
                     handleRead(key, selector);
                 }
+                if (key.isWritable()) {
+                    System.out.println(key);
+                }
                 iterator.remove();
             }
         }
@@ -49,13 +52,16 @@ public class NioTelnetServer {
     //  cat (name) - вывести в консоль содержимое файла
 
     private void handleRead(SelectionKey key, Selector selector) throws IOException {
+
         SocketChannel channel = (SocketChannel) key.channel();
         int read = channel.read(buffer);
         if (read == -1) {
+            System.out.println(-1);
             channel.close();
             return;
         }
         if (read == 0) {
+            System.out.println(0);
             return;
         }
         buffer.flip();
@@ -87,6 +93,7 @@ public class NioTelnetServer {
         }
     }
 
+    @SuppressWarnings("unckeked")
     private String getFilesList() {
         return String.join(" ", new File(rootPath).list());
     }
